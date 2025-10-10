@@ -37,7 +37,8 @@ import React, { useState } from 'react';
         <nav className="bg-gradient-to-r from-sky-500 to-sky-700 p-4 shadow-lg sticky top-0 z-50">
           <div className="container mx-auto flex justify-between items-center">
             <Link to="/" className="text-2xl font-bold text-white flex items-center">
-              <img src={logoUrl} alt="Freelancer Now Logo" className="mr-2 h-10 w-10 rounded-md object-contain" />
+              <img src="https://drive.google.com/uc?export=view&id=1lGIZ_seup5QCP2pinGNEJgBoCgBVnFPA" alt="Imagem do Google Drive"
+ className="mr-2 h-10 w-10 rounded-md object-contain" />
               Freelancer Now
             </Link>
             

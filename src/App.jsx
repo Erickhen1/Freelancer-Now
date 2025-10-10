@@ -107,7 +107,8 @@ import React, { useState } from 'react';
             transition={{ duration: 0.6, delay: 0.1 }}
             className="mb-8"
           >
-            <img src={logoUrl} alt="Freelancer Now Logo Grande" className="mx-auto h-24 w-24 md:h-32 md:w-32 rounded-2xl shadow-lg border-2 border-white object-contain" />
+            <img src="https://drive.google.com/uc?export=view&id=1lGIZ_seup5QCP2pinGNEJgBoCgBVnFPA" alt="Imagem do Google Drive" 
+ className="mx-auto h-24 w-24 md:h-32 md:w-32 rounded-2xl shadow-lg border-2 border-white object-contain" />
           </motion.div>
           <motion.h1 
             initial={{ opacity: 0, scale: 0.8 }}
@@ -166,7 +167,8 @@ import React, { useState } from 'react';
           <h2 className="text-3xl font-bold text-center text-gray-800 mb-12">Como Funciona</h2>
           <div className="grid md:grid-cols-3 gap-8">
             <FeatureCard 
-              icon={<img src={logoUrl} alt="Ícone Empresas" className="h-12 w-12 opacity-80 object-contain" />} 
+              icon={<img src="https://drive.google.com/uc?export=view&id=1lGIZ_seup5QCP2pinGNEJgBoCgBVnFPA" alt="Imagem do Google Drive"
+ className="h-12 w-12 opacity-80 object-contain" />} 
               title="Para Empresas" 
               description="Publique vagas rapidamente e encontre os melhores freelancers para o seu estabelecimento. Visualize perfis detalhados e avaliações."
               delay={0.2}

@@ -135,11 +135,12 @@ import React, { useState } from 'react';
             <Button size="lg" className="w-full sm:w-auto bg-amber-400 text-sky-800 hover:bg-amber-500" asChild>
               <Link to="/buscar-vagas"><Search className="mr-2 h-5 w-5" />Buscar Vagas</Link>
             </Button>
-            <Button 
-              size="lg" 
-              variant="outline" 
-              className="w-full sm:w-auto text-white border-white hover:bg-white hover:text-sky-700 mt-4 sm:mt-0" 
-              asChild
+            <Button
+  size="lg"
+  variant="outline"
+  className="w-full sm:w-auto bg-transparent text-white border-white hover:bg-white hover:text-sky-700 mt-4 sm:mt-0"
+  asChild
+
             >
               <Link to="/publicar-vaga"><PlusCircle className="mr-2 h-5 w-5" />Publicar Vaga</Link>
             </Button>

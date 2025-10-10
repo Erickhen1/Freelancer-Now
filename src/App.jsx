@@ -13,7 +13,7 @@ import React, { useState } from 'react';
     import ReviewsPage from '@/pages/ReviewsPage.jsx';
     import TermsPage from '@/pages/TermsPage.jsx';
 
-    const logoUrl = "https://storage.googleapis.com/hostinger-horizons-assets-prod/95f580e9-5bc3-47bc-920d-5a87439161c0/45c0b51c300548a9e8790c65cd8f60a2.png";
+    const logoUrl = "https://imgur.com/a/gvz35Or";
 
     const Navbar = () => {
       const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -106,7 +106,7 @@ import React, { useState } from 'react';
             transition={{ duration: 0.6, delay: 0.1 }}
             className="mb-8"
           >
-            <img src={"/images/logo-grande.png"} alt="Freelancer Now Logo Grande" className="mx-auto h-24 w-24 md:h-32 md:w-32 rounded-2xl shadow-lg border-2 border-white object-contain" />
+            <img src={logoUrl} alt="Freelancer Now Logo Grande" className="mx-auto h-24 w-24 md:h-32 md:w-32 rounded-2xl shadow-lg border-2 border-white object-contain" />
           </motion.div>
           <motion.h1 
             initial={{ opacity: 0, scale: 0.8 }}

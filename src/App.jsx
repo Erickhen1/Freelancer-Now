@@ -13,7 +13,7 @@ import React, { useState } from 'react';
     import ReviewsPage from '@/pages/ReviewsPage.jsx';
     import TermsPage from '@/pages/TermsPage.jsx';
 
-    const logoUrl = "https://imgur.com/a/gvz35Or";
+    const logoUrl = "https://drive.google.com/uc?export=view&id=1lGIZ_seup5QCP2pinGNEJgBoCgBVnFPA";
 
     const Navbar = () => {
       const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);

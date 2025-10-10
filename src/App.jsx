@@ -106,7 +106,7 @@ import React, { useState } from 'react';
             transition={{ duration: 0.6, delay: 0.1 }}
             className="mb-8"
           >
-            <img src={logoUrl} alt="Freelancer Now Logo Grande" className="mx-auto h-24 w-24 md:h-32 md:w-32 rounded-2xl shadow-lg border-2 border-white object-contain" />
+            <img src={"/images/logo-grande.png"} alt="Freelancer Now Logo Grande" className="mx-auto h-24 w-24 md:h-32 md:w-32 rounded-2xl shadow-lg border-2 border-white object-contain" />
           </motion.div>
           <motion.h1 
             initial={{ opacity: 0, scale: 0.8 }}

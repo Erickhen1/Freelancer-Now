@@ -22,6 +22,43 @@ const HomePage = () => (
   </>
 );
 
+// Definindo o Componente PlaceholderPage
+const PlaceholderPage = ({ title, icon, message, showImage = true }) => {
+  const { toast } = useToast();
+  React.useEffect(() => {
+    toast({
+      title: "Página Carregada",
+      description: Você está na página "${title}".,
+      variant: "default",
+    });
+  }, [title, toast]);
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="container mx-auto py-16 px-4 text-center flex flex-col items-center justify-center min-h-[calc(100vh-200px)]"
+    >
+      <div className="text-sky-600 mb-6">
+        {React.cloneElement(icon, { size: 64, strokeWidth: 1.5 })}
+      </div>
+      <h1 className="text-4xl font-bold text-sky-700 mb-4">{title}</h1>
+      <p className="text-lg text-gray-600 mb-8 max-w-md">
+        {message || "Esta seção está em desenvolvimento. Volte em breve para conferir as novidades!"}
+      </p>
+      {showImage && (
+        <img    
+          className="mx-auto rounded-lg shadow-lg w-full max-w-sm h-auto mb-8"
+          alt={Ilustração para a página ${title}} src="https://images.unsplash.com/photo-1525265217476-9616bff67723" />
+      )}
+      <Button className="bg-sky-600 hover:bg-sky-700 text-white" asChild>
+        <Link to="/"><Home className="mr-2 h-5 w-5" />Voltar para Home</Link>
+      </Button>
+    </motion.div>
+  );
+};
+
 const logoUrl = "https://drive.google.com/uc?export=view&id=1lGIZ_seup5QCP2pinGNEJgBoCgBVnFPA";
 
 const Navbar = () => {

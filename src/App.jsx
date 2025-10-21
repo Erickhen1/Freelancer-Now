@@ -232,7 +232,7 @@ import React, { useState } from 'react';
       React.useEffect(() => {
         toast({
           title: "Página Carregada",
-          description: Você está na página "${title}".,
+          description: `Você está na página "${title}".`,
           variant: "default",
         });
       }, [title, toast]);
@@ -254,7 +254,7 @@ import React, { useState } from 'react';
           {showImage && (
             <img    
               class="mx-auto rounded-lg shadow-lg w-full max-w-sm h-auto mb-8"
-              alt={Ilustração para a página ${title}} src="https://images.unsplash.com/photo-1525265217476-9616bff67723" />
+              alt={`Ilustração para a página ${title}`} src="https://images.unsplash.com/photo-1525265217476-9616bff67723" />
           )}
           <Button className="bg-sky-600 hover:bg-sky-700 text-white" asChild>
             <Link to="/"><Home className="mr-2 h-5 w-5" />Voltar para Home</Link>
@@ -296,4 +296,5 @@ import React, { useState } from 'react';
         </Router>
       );
     }
+
     export default App;

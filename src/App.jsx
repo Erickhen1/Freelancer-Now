@@ -12,7 +12,7 @@ import JobSearchPage from '@/pages/JobSearchPage.jsx';
 import PostJobPage from '@/pages/PostJobPage.jsx';
 import ReviewsPage from '@/pages/ReviewsPage.jsx';
 import TermsPage from '@/pages/TermsPage.jsx';
-import { supabase } from '@/lib/supabaseClient'; // Importar o supabase para verificar o estado de login
+import { supabase } from '@/lib/supabaseClient';  // Certifique-se de que está importando o supabase
 
 const logoUrl = "https://drive.google.com/uc?export=view&id=1lGIZ_seup5QCP2pinGNEJgBoCgBVnFPA";
 
@@ -105,6 +105,7 @@ const Navbar = ({ isLoggedIn }) => {
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
+  // Verifica o estado de login ao carregar a página
   useEffect(() => {
     const user = supabase.auth.user(); // Verifica se o usuário está logado
     if (user) {
@@ -142,4 +143,5 @@ const App = () => {
     </Router>
   );
 };
+
 export default App;

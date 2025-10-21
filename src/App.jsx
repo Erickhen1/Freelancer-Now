@@ -298,3 +298,73 @@ import React, { useState } from 'react';
     }
 
     export default App;
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { supabase } from './lib/supabaseClient'; // Certifique-se de que o Supabase está configurado corretamente
+
+import Navbar from './components/Navbar';
+import HomePage from './pages/HomePage';
+import JobSearchPage from './pages/JobSearchPage';
+import PostJobPage from './pages/PostJobPage';
+import ProfilePage from './pages/ProfilePage';
+import LoginPage from './pages/LoginPage';
+import RegistrationPage from './pages/RegistrationPage';
+import ReviewsPage from './pages/ReviewsPage';
+import TermsPage from './pages/TermsPage';
+import PlaceholderPage from './pages/PlaceholderPage';
+import { FileText } from 'lucide-react';  // Icone para PlaceholderPage
+
+const App = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // Verificar o estado de autenticação ao carregar a página
+  useEffect(() => {
+    const user = supabase.auth.user();
+    if (user) {
+      setIsLoggedIn(true);  // Se o usuário estiver logado
+    }
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((_, session) => {
+      setIsLoggedIn(session?.user ? true : false);  // Atualiza o estado de login com base na sessão
+    });
+
+    return () => {
+      authListener?.unsubscribe();  // Limpar o listener
+    };
+  }, []);
+
+  return (
+    <Router>
+      <div className="flex flex-col min-h-screen bg-gray-100">
+        {/* Navbar recebe isLoggedIn como prop */}
+        <Navbar isLoggedIn={isLoggedIn} />
+
+        <main className="flex-grow">
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/buscar-vagas" element={<JobSearchPage />} />
+            <Route path="/publicar-vaga" element={<PostJobPage />} />
+            <Route path="/perfil" element={<ProfilePage />} />
+            <Route path="/avaliacoes" element={<ReviewsPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/cadastro" element={<RegistrationPage />} />
+            <Route path="/termos" element={<TermsPage />} />
+            <Route path="/privacidade" element={<PlaceholderPage title="Política de Privacidade" icon={<FileText />} message="Detalhes sobre como lidamos com seus dados estarão disponíveis aqui em breve." />} />
+          </Routes>
+        </main>
+
+        {/* Footer */}
+        <footer>
+          {/* Coloque o conteúdo do rodapé aqui */}
+        </footer>
+
+        {/* Toast para mensagens temporárias */}
+        <div>
+          {/* Aqui pode ir o componente de Toast, se você estiver usando */}
+        </div>
+      </div>
+    </Router>
+  );
+};
+
+export default App;

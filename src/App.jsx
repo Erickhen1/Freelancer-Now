@@ -13,6 +13,15 @@ import PostJobPage from '@/pages/PostJobPage.jsx';
 import ReviewsPage from '@/pages/ReviewsPage.jsx';
 import TermsPage from '@/pages/TermsPage.jsx';
 
+// Definindo o Componente HomePage
+const HomePage = () => (
+  <>
+    <HeroSection />
+    <FeaturesSection />
+    <CtaSection />
+  </>
+);
+
 const logoUrl = "https://drive.google.com/uc?export=view&id=1lGIZ_seup5QCP2pinGNEJgBoCgBVnFPA";
 
 const Navbar = () => {
@@ -102,7 +111,7 @@ const Navbar = () => {
   );
 };
 
-// O resto do código da HomePage, HeroSection, FeatureCard, etc., permanece igual
+// Componentes como HeroSection, FeaturesSection, etc. continuam os mesmos.
 
 function App() {
   return (
@@ -111,7 +120,7 @@ function App() {
         <Navbar />
         <main className="flex-grow">
           <Routes>
-            <Route path="/" element={<HomePage />} />
+            <Route path="/" element={<HomePage />} /> {/* Rota para HomePage */}
             <Route path="/buscar-vagas" element={<JobSearchPage />} />
             <Route path="/publicar-vaga" element={<PostJobPage />} />
             <Route path="/perfil" element={<ProfilePage />} />

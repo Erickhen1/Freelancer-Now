@@ -211,13 +211,17 @@ const JobSearchPage = () => {
                       {' '}Postado em: {postedAt}
                     </p>
                     <Button variant="link" asChild className="text-blue-600 hover:text-blue-800 p-0 h-auto">
-                      <Link
-                        to={canChat ? `/chat/${job.created_by}` : `/vaga/${job.id}`}
-                        state={detailsState}
-                      >
-                        Ver Detalhes
-                      </Link>
-                    </Button>
+                       <Link
+    to={`/vaga/${job.id}`}
+    state={{
+      job,
+      employer_id: job.created_by // passa o dono da vaga para a tela de detalhes
+    }}
+  >
+    Ver Detalhes
+  </Link>
+</Button>
+
                   </CardFooter>
                 </Card>
               </motion.div>

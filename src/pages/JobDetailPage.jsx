@@ -27,12 +27,10 @@ const JobDetailPage = () => {
   const { id } = useParams();
   const { toast } = useToast();
 
-  // tenta vir do state (quando clicou em "Ver Detalhes")
   const [job, setJob] = useState(location.state?.job || null);
   const [employer_id, setEmployerId] = useState(location.state?.employer_id || null);
   const [loading, setLoading] = useState(false);
 
-  // se entrou pela URL direta, busca no Supabase
   useEffect(() => {
     const fetchJob = async () => {
       if (!job && id) {
@@ -52,7 +50,8 @@ const JobDetailPage = () => {
           navigate('/');
         } else {
           setJob(data);
-          setEmployerId(data.created_by || null);
+          // tenta vários possíveis nomes do campo do dono
+          setEmployerId(data.created_by || data.user_id || data.owner_id || null);
         }
         setLoading(false);
       }
@@ -60,10 +59,10 @@ const JobDetailPage = () => {
     fetchJob();
   }, [id, job, navigate, toast]);
 
-  // se veio por state mas não definiu employer_id, tenta do job
+  // Se veio por state mas não trouxe employer_id, tenta recuperar do job
   useEffect(() => {
-    if (job && !employer_id && job.created_by) {
-      setEmployerId(job.created_by);
+    if (job && !employer_id) {
+      setEmployerId(job.created_by || job.user_id || job.owner_id || null);
     }
   }, [job, employer_id]);
 
@@ -80,13 +79,23 @@ const JobDetailPage = () => {
       return;
     }
 
-    const senderId = user.id || user.user?.id; // compatível com localStorage e Supabase
-    if (!senderId || !employer_id) {
+    const senderId = user.id || user.user?.id;
+    if (!senderId) {
       toast({
-        title: 'Dados insuficientes',
-        description: 'Não foi possível iniciar a conversa (IDs ausentes).',
+        title: 'Erro de sessão',
+        description: 'Seu ID de usuário não foi identificado.',
         variant: 'destructive',
       });
+      return;
+    }
+
+    if (!employer_id) {
+      toast({
+        title: 'Erro',
+        description: 'O ID do contratante não foi encontrado nesta vaga.',
+        variant: 'destructive',
+      });
+      console.warn('Campo de criador ausente na vaga:', job);
       return;
     }
 

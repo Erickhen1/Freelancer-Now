@@ -32,6 +32,22 @@ import React, { useState } from 'react';
       ];
 
       const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
+        const [usuarioLogado, setUsuarioLogado] = useState(false);
+
+React.useEffect(() => {
+  const logado = localStorage.getItem("usuarioLogado");
+  if (logado) setUsuarioLogado(true);
+}, []);
+
+const handleLogin = () => {
+  localStorage.setItem("usuarioLogado", "true");
+  setUsuarioLogado(true);
+};
+
+const handleLogout = () => {
+  localStorage.removeItem("usuarioLogado");
+  setUsuarioLogado(false);
+};
 
       return (
         <nav className="bg-gradient-to-r from-sky-500 to-sky-700 p-4 shadow-lg sticky top-0 z-50">

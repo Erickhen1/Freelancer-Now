@@ -20,27 +20,32 @@ const JobSearchPage = () => {
   const { toast } = useToast();
 
   const fetchJobs = async () => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('jobs')
-        .select('id,title,company_name,location,job_type,salary,description,date_posted,created_by')
-        .order('date_posted', { ascending: false });
+  try {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('jobs')
+      .select(
+        'id, title, company_name, location, job_type, salary, description, created_by, date_posted, created_at'
+      )
+      // ordena por date_posted se existir; senão, por created_at
+      .order('date_posted', { ascending: false, nullsLast: true })
+      .order('created_at', { ascending: false, nullsLast: true });
 
-      if (error) throw error;
-      setJobs(data || []);
-    } catch (err) {
-      console.error('Error fetching jobs:', err);
-      toast({
-        title: 'Erro ao Carregar Vagas',
-        description: 'Não foi possível buscar as vagas. Tente novamente.',
-        variant: 'destructive',
-      });
-      setJobs([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+    if (error) throw error;
+    setJobs(data || []);
+  } catch (err) {
+    console.error('Erro ao buscar vagas:', err);
+    toast({
+      title: 'Erro ao Carregar Vagas',
+      description: err.message || 'Não foi possível buscar as vagas.',
+      variant: 'destructive',
+    });
+    setJobs([]);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   useEffect(() => { fetchJobs(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 

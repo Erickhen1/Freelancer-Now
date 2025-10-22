@@ -13,6 +13,7 @@ import PostJobPage from '@/pages/PostJobPage.jsx';
 import ReviewsPage from '@/pages/ReviewsPage.jsx';
 import TermsPage from '@/pages/TermsPage.jsx';
 import ChatPage from "@/pages/ChatPage.jsx";
+import JobDetailPage from '@/pages/JobDetailPage.jsx';
 
 
 const Navbar = () => {
@@ -330,6 +331,7 @@ function App() {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/buscar-vagas" element={<JobSearchPage />} />
+            <Route path="/vaga/:id" element={<JobDetailPage />} />
             <Route path="/publicar-vaga" element={<PostJobPage />} />
             <Route path="/perfil" element={<ProfilePage />} />
             <Route path="/avaliacoes" element={<ReviewsPage />} />

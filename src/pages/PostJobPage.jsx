@@ -32,25 +32,24 @@ const PostJobPage = () => {
     let active = true;
 
     const init = async () => {
-      // 1) sessão pelo Supabase
-      const { data: { user } } = await supabase.auth.getUser();
+      // ✅ sessão atual (mais confiável que getUser)
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user || null;
 
-      // 2) fallback pro seu localStorage (mantém compatibilidade)
+      // 🔁 fallback pro seu localStorage (apenas para preencher UI, não para RLS)
       const ls = localStorage.getItem('loggedInUser');
       const lsUser = ls ? JSON.parse(ls) : null;
 
-      // Se não está logado em nenhum dos dois -> bloqueia
       if (!user && !lsUser) {
         toast({ title: 'Acesso negado', description: 'Faça login como empresa para publicar vagas.', variant: 'destructive' });
         navigate('/login');
         return;
       }
 
-      // Descobre tipo de conta
       const accountType =
         user?.user_metadata?.account_type ||
         lsUser?.account_type ||
-        'pessoaFisica'; // assume PF se não vier
+        'pessoaFisica';
 
       if (accountType === 'pessoaFisica') {
         toast({ title: 'Acesso negado', description: 'Apenas empresas podem publicar vagas.', variant: 'destructive' });
@@ -58,7 +57,6 @@ const PostJobPage = () => {
         return;
       }
 
-      // Prefill nome da empresa
       const empresaFromMeta =
         user?.user_metadata?.razao_social ||
         user?.user_metadata?.nome ||
@@ -67,13 +65,12 @@ const PostJobPage = () => {
         '';
 
       if (!active) return;
-      setAuthUser(user || lsUser); // guarda user (preferência Supabase)
+      setAuthUser(user || lsUser);
       setFormData(prev => ({ ...prev, companyName: empresaFromMeta }));
     };
 
     init();
 
-    // escuta mudanças de auth (opcional)
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
       setAuthUser(session?.user || null);
     });
@@ -97,15 +94,16 @@ const PostJobPage = () => {
     e.preventDefault();
     if (submitting) return;
 
-    // segurança: precisa estar logado pelo Supabase
-    const { data: { user } } = await supabase.auth.getUser();
+    // ✅ precisa ter sessão ativa de verdade
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session?.user;
+
     if (!user) {
       toast({ title: 'Sessão expirada', description: 'Faça login novamente para publicar.', variant: 'destructive' });
       navigate('/login');
       return;
     }
 
-    // validações mínimas
     if (!formData.title || !formData.location || !formData.jobType || !formData.description) {
       toast({
         title: 'Campos obrigatórios',
@@ -117,13 +115,11 @@ const PostJobPage = () => {
 
     setSubmitting(true);
 
-    // normaliza deadline (date -> ISO) ou null
     const deadlineISO = formData.applicationDeadline
       ? new Date(formData.applicationDeadline).toISOString()
       : null;
 
     const jobData = {
-      // campos do seu schema
       title: formData.title,
       company_name: formData.companyName,
       location: formData.location,
@@ -133,10 +129,9 @@ const PostJobPage = () => {
       requirements: formData.requirements || null,
       application_deadline: deadlineISO,
       date_posted: new Date().toISOString(),
-
-      // ESSENCIAL para RLS:
-      created_by: user.id,     // dono da vaga (usa as policies)
-      user_id: user.id ?? null // mantém se sua tabela já tinha essa coluna
+      // 🔐 RLS
+      created_by: user.id,
+      user_id: user.id ?? null
     };
 
     const { data, error } = await supabase
@@ -149,9 +144,11 @@ const PostJobPage = () => {
 
     if (error) {
       console.error('Error posting job:', error);
+      // Ajuda a diagnosticar RLS
+      const hint = error.code === '42501' ? ' (verifique as policies de RLS e o campo created_by)' : '';
       toast({
         title: 'Erro ao publicar',
-        description: error.message || 'Não foi possível publicar a vaga.',
+        description: (error.message || 'Não foi possível publicar a vaga.') + hint,
         variant: 'destructive'
       });
       return;
@@ -194,7 +191,7 @@ const PostJobPage = () => {
                 onChange={handleChange}
                 placeholder="Nome do seu estabelecimento"
                 required
-                disabled={!!formData.companyName} // bloqueia se já veio dos metadados
+                disabled={!!formData.companyName}
               />
             </div>
           </div>

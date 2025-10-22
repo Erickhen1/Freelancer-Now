@@ -5,18 +5,18 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
-import { LogIn, Mail, Lock, UserPlus, Loader2 } from 'lucide-react';
+import { LogIn, Mail, Lock, UserPlus } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({ email: '', senha: '' });
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // mantido caso queira usar em outros fluxos
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
@@ -24,8 +24,8 @@ const LoginPage = () => {
 
     if (!formData.email || !formData.senha) {
       toast({
-        title: 'Erro de login',
-        description: 'Informe e-mail e senha.',
+        title: 'Erro de Login',
+        description: 'Por favor, preencha email e senha.',
         variant: 'destructive',
       });
       return;
@@ -33,46 +33,42 @@ const LoginPage = () => {
 
     setLoading(true);
     try {
-      // 🔐 Login oficial no Supabase Auth
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: formData.email.trim(),
-        password: formData.senha,
-      });
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('email', formData.email)
+        .eq('senha', formData.senha) // ⚠️ NÃO USE EM PRODUÇÃO — apenas refletindo seu código atual
+        .single();
 
-      if (error) {
-        // mensagens comuns
-        const friendly =
-          error.message?.includes('Invalid login credentials') ? 'Credenciais inválidas.' :
-          error.message?.includes('Email not confirmed') ? 'E-mail ainda não confirmado.' :
-          error.message || 'Não foi possível entrar.';
-        toast({ title: 'Erro de login', description: friendly, variant: 'destructive' });
+      if (error || !data) {
+        console.error('Login error:', error);
+        toast({
+          title: 'Erro de Login',
+          description: 'Email ou senha incorretos.',
+          variant: 'destructive',
+        });
         return;
       }
 
-      // data.session contém user + tokens; sessão fica ativa neste domínio
-      const user = data.user;
-
-      // ✅ compatibilidade com sua Navbar (usa localStorage)
+      // grava no localStorage para o Navbar esconder "Login / Cadastre-se"
       localStorage.setItem('usuarioLogado', 'true');
-      localStorage.setItem('loggedInUser', JSON.stringify({
-        id: user.id,
-        email: user.email,
-        // metadados úteis pro restante do app
-        ...user.user_metadata,
-      }));
+      localStorage.setItem('loggedInUser', JSON.stringify(data));
 
       toast({
-        title: 'Bem-vindo(a)!',
-        description: `Login realizado com ${user.email}.`,
+        title: 'Login Bem-sucedido!',
+        description: `Bem-vindo(a) de volta, ${data.nome || 'usuário'}!`,
+        variant: 'default',
       });
 
-      // redirecione para a ação mais comum pós-login
-      navigate('/publicar-vaga');
+      // Recarrega a aplicação para o Navbar refazer o mount e ler o localStorage
+      window.location.assign('/');
+      // se preferir navegar sem reload, teria que levantar o estado via contexto global
+      // navigate('/perfil');
     } catch (err) {
       console.error('Unexpected login error:', err);
       toast({
         title: 'Erro inesperado',
-        description: 'Tente novamente em instantes.',
+        description: 'Tente novamente em alguns instantes.',
         variant: 'destructive',
       });
     } finally {
@@ -110,7 +106,6 @@ const LoginPage = () => {
               required
               disabled={loading}
               className="focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow"
-              autoComplete="email"
             />
           </div>
 
@@ -129,7 +124,6 @@ const LoginPage = () => {
               required
               disabled={loading}
               className="focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow"
-              autoComplete="current-password"
             />
           </div>
 
@@ -144,7 +138,7 @@ const LoginPage = () => {
             disabled={loading}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white text-lg py-3 font-semibold transition-transform transform hover:scale-105 disabled:opacity-70"
           >
-            {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <LogIn className="mr-2 h-5 w-5" />}
+            <LogIn className="mr-2 h-5 w-5" />
             {loading ? 'Entrando...' : 'Entrar'}
           </Button>
         </form>

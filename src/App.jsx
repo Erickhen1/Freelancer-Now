@@ -12,6 +12,8 @@ import JobSearchPage from '@/pages/JobSearchPage.jsx';
 import PostJobPage from '@/pages/PostJobPage.jsx';
 import ReviewsPage from '@/pages/ReviewsPage.jsx';
 import TermsPage from '@/pages/TermsPage.jsx';
+import ChatPage from "@/pages/ChatPage.jsx";
+
 
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);

@@ -6,7 +6,7 @@ import { MessageCircle, MapPin, Briefcase, DollarSign, CalendarDays } from 'luci
 import { supabase } from '@/lib/supabaseClient';
 import { useToast } from '@/components/ui/use-toast';
 
-// Busca o usuário logado: Supabase -> fallback localStorage
+// Supabase -> fallback localStorage
 const getLoggedUser = async () => {
   try {
     let { data: { user } } = await supabase.auth.getUser();
@@ -27,17 +27,25 @@ const JobDetailPage = () => {
   const { id } = useParams();
   const { toast } = useToast();
 
+  // pode vir da lista via state
   const [job, setJob] = useState(location.state?.job || null);
-  const [employer_id, setEmployerId] = useState(location.state?.employer_id || null);
+  const [employer_id, setEmployerId] = useState(
+    // se a lista já mandou pronto, usa
+    location.state?.employer_id ??
+      location.state?.job?.user_id ??
+      location.state?.job?.created_by ??
+      null
+  );
   const [loading, setLoading] = useState(false);
 
+  // Se entrou direto pela URL, busca do banco
   useEffect(() => {
     const fetchJob = async () => {
       if (!job && id) {
         setLoading(true);
         const { data, error } = await supabase
           .from('jobs')
-          .select('*')
+          .select('*') // podemos selecionar tudo; o importante é user_id/created_by virem
           .eq('id', id)
           .single();
 
@@ -50,8 +58,8 @@ const JobDetailPage = () => {
           navigate('/');
         } else {
           setJob(data);
-          // tenta vários possíveis nomes do campo do dono
-          setEmployerId(data.created_by || data.user_id || data.owner_id || null);
+          // resolve o dono (preferindo user_id)
+          setEmployerId(data.user_id || data.created_by || null);
         }
         setLoading(false);
       }
@@ -59,10 +67,10 @@ const JobDetailPage = () => {
     fetchJob();
   }, [id, job, navigate, toast]);
 
-  // Se veio por state mas não trouxe employer_id, tenta recuperar do job
+  // Se veio job via state mas employer_id não, tenta resolver a partir do job
   useEffect(() => {
     if (job && !employer_id) {
-      setEmployerId(job.created_by || job.user_id || job.owner_id || null);
+      setEmployerId(job.user_id || job.created_by || null);
     }
   }, [job, employer_id]);
 
@@ -95,7 +103,7 @@ const JobDetailPage = () => {
         description: 'O ID do contratante não foi encontrado nesta vaga.',
         variant: 'destructive',
       });
-      console.warn('Campo de criador ausente na vaga:', job);
+      console.warn('Vaga sem user_id/created_by:', job);
       return;
     }
 
@@ -118,31 +126,41 @@ const JobDetailPage = () => {
       <Card className="shadow-lg border-blue-100">
         <CardHeader>
           <CardTitle className="text-3xl font-bold text-blue-700">{job.title}</CardTitle>
-          <p className="text-gray-500">{job.company_name}</p>
         </CardHeader>
         <CardContent className="space-y-4">
+          {job.company_name && (
+            <p className="text-gray-500">{job.company_name}</p>
+          )}
+
           <p className="flex items-center">
             <MapPin className="mr-2 h-4 w-4 text-blue-500" />
-            {job.location}
+            {job.location || '—'}
           </p>
+
           <p className="flex items-center">
             <Briefcase className="mr-2 h-4 w-4 text-blue-500" />
-            {job.job_type}
+            {job.job_type || '—'}
           </p>
+
           {job.salary && (
             <p className="flex items-center">
               <DollarSign className="mr-2 h-4 w-4 text-green-500" />
               {job.salary}
             </p>
           )}
-          <p className="text-gray-700">
-            <strong>Descrição:</strong> {job.description}
-          </p>
+
+          {job.description && (
+            <p className="text-gray-700">
+              <strong>Descrição:</strong> {job.description}
+            </p>
+          )}
+
           {job.requirements && (
             <p className="text-gray-700">
               <strong>Requisitos:</strong> {job.requirements}
             </p>
           )}
+
           {job.application_deadline && (
             <p className="flex items-center">
               <CalendarDays className="mr-2 h-4 w-4 text-blue-500" />

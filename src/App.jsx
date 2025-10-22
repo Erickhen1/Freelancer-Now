@@ -12,6 +12,22 @@ import JobSearchPage from '@/pages/JobSearchPage.jsx';
 import PostJobPage from '@/pages/PostJobPage.jsx';
 import ReviewsPage from '@/pages/ReviewsPage.jsx';
 import TermsPage from '@/pages/TermsPage.jsx';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import JobSearchPage from "./pages/JobSearchPage";
+import JobDetailPage from "./pages/JobDetailPage";
+// (outros imports...)
+
+export default function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/jobs" element={<JobSearchPage />} />
+        <Route path="/jobs/:id" element={<JobDetailPage />} />
+        {/* outras rotas existentes */}
+      </Routes>
+    </Router>
+  );
+}
 
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);

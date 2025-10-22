@@ -1,139 +1,100 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { supabase } from '@/lib/supabaseClient';
+import React, { useEffect, useRef, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useToast } from '@/components/ui/use-toast';
+import { supabase } from '@/lib/supabaseClient';
 
 const ChatPage = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { sender_id, recipient_id, job_title, company } = location.state || {};
+  const { chatId } = useParams();
   const [messages, setMessages] = useState([]);
-  const [newMessage, setNewMessage] = useState('');
-  const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
+  const [chat, setChat] = useState(null);
+  const [input, setInput] = useState('');
+  const [me, setMe] = useState(null);
+  const listRef = useRef(null);
 
-  // Função para buscar usuário logado (Supabase ou localStorage)
-  const getLoggedUser = async () => {
-    try {
-      let { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        const local = localStorage.getItem('loggedInUser');
-        user = local ? JSON.parse(local) : null;
-      }
-      return user;
-    } catch (error) {
-      console.error('Erro ao obter usuário logado:', error);
-      return null;
-    }
-  };
+  // carrega sessão e chat
+  useEffect(() => {
+    (async () => {
+      const { data: u } = await supabase.auth.getUser();
+      setMe(u?.user?.id || null);
 
-  // Busca mensagens entre dois usuários
-  const fetchMessages = async () => {
-    const currentUser = await getLoggedUser();
-    if (!currentUser || !recipient_id) {
-      toast({
-        title: 'Faça login',
-        description: 'Você precisa estar logado para ver mensagens.',
-        variant: 'destructive'
-      });
-      navigate('/login');
-      return;
-    }
+      const { data: c, error: cErr } = await supabase
+        .from('chats')
+        .select('id, user_a, user_b, job_id')
+        .eq('id', chatId)
+        .single();
+      if (!cErr) setChat(c);
+    })();
+  }, [chatId]);
 
-    const currentId = currentUser.id || currentUser.user?.id;
-    setLoading(true);
-    const { data, error } = await supabase
-      .from('messages')
-      .select('*')
-      .or(`and(sender_id.eq.${currentId},recipient_id.eq.${recipient_id}),and(sender_id.eq.${recipient_id},recipient_id.eq.${currentId})`)
-      .order('created_at', { ascending: true });
+  // carrega mensagens iniciais
+  useEffect(() => {
+    (async () => {
+      const { data, error } = await supabase
+        .from('messages')
+        .select('id, sender, content, created_at')
+        .eq('chat_id', chatId)
+        .order('created_at', { ascending: true });
+      if (!error) setMessages(data || []);
+    })();
+  }, [chatId]);
 
-    if (error) console.error('Erro ao carregar mensagens:', error);
-    else setMessages(data || []);
-    setLoading(false);
-  };
+  // subscribe realtime
+  useEffect(() => {
+    const channel = supabase
+      .channel(`realtime:messages:${chatId}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'messages', filter: `chat_id=eq.${chatId}` },
+        payload => {
+          setMessages(prev => [...prev, payload.new]);
+          // scroll bottom
+          setTimeout(() => listRef.current?.scrollTo(0, listRef.current.scrollHeight), 0);
+        }
+      )
+      .subscribe();
 
-  // Enviar nova mensagem
-  const sendMessage = async (e) => {
-    e.preventDefault();
-    if (!newMessage.trim()) return;
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [chatId]);
 
-    const currentUser = await getLoggedUser();
-    if (!currentUser) {
-      toast({
-        title: 'Faça login',
-        description: 'Você precisa estar logado para enviar mensagens.',
-        variant: 'destructive'
-      });
-      navigate('/login');
-      return;
-    }
-
-    const currentId = currentUser.id || currentUser.user?.id;
-
+  const sendMessage = async () => {
+    const trimmed = input.trim();
+    if (!trimmed || !me) return;
     const { error } = await supabase
       .from('messages')
-      .insert([{ sender_id: currentId, recipient_id, content: newMessage }]);
-
-    if (error) {
-      console.error('Erro ao enviar mensagem:', error);
-    } else {
-      setNewMessage('');
-      fetchMessages();
-    }
+      .insert([{ chat_id: Number(chatId), sender: me, content: trimmed }]);
+    if (!error) setInput('');
   };
 
-  useEffect(() => {
-    fetchMessages();
-  }, [recipient_id]);
-
   return (
-    <div className="container mx-auto py-12 px-4 max-w-2xl">
-      <div className="bg-white rounded-xl shadow-lg border border-blue-100 p-6 flex flex-col h-[70vh]">
-        <h1 className="text-xl font-bold text-blue-700 mb-2">
-          Conversa sobre: {job_title}
-        </h1>
-        <p className="text-gray-500 mb-4">Empresa: {company}</p>
+    <div className="container mx-auto max-w-3xl p-6 flex flex-col h-[80vh]">
+      <h1 className="text-xl font-semibold mb-4">Chat</h1>
 
-        <div className="flex-grow overflow-y-auto border rounded-lg p-4 mb-4 bg-gray-50">
-          {loading ? (
-            <p className="text-gray-500 text-center">Carregando mensagens...</p>
-          ) : messages.length > 0 ? (
-            messages.map((msg) => (
-              <div
-                key={msg.id}
-                className={`my-2 p-2 rounded-lg max-w-[70%] ${
-                  msg.sender_id === (JSON.parse(localStorage.getItem('loggedInUser'))?.id)
-                    ? 'bg-blue-100 ml-auto text-right'
-                    : 'bg-gray-200'
-                }`}
-              >
-                <p>{msg.content}</p>
-                <span className="block text-xs text-gray-500 mt-1">
-                  {new Date(msg.created_at).toLocaleTimeString('pt-BR', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
-                </span>
-              </div>
-            ))
-          ) : (
-            <p className="text-gray-500 text-center">Nenhuma mensagem ainda.</p>
-          )}
-        </div>
+      <div ref={listRef} className="flex-1 overflow-y-auto border rounded p-4 space-y-3">
+        {messages.map(m => (
+          <div
+            key={m.id}
+            className={`max-w-[80%] rounded px-3 py-2 ${
+              m.sender === me ? 'ml-auto bg-blue-600 text-white' : 'bg-gray-100'
+            }`}
+            title={new Date(m.created_at).toLocaleString()}
+          >
+            {m.content}
+          </div>
+        ))}
+        {messages.length === 0 && <div className="text-gray-500">Sem mensagens ainda.</div>}
+      </div>
 
-        <form onSubmit={sendMessage} className="flex space-x-2">
-          <Input
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Digite sua mensagem..."
-          />
-          <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white">
-            Enviar
-          </Button>
-        </form>
+      <div className="mt-4 flex gap-2">
+        <Input
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          placeholder="Escreva uma mensagem…"
+          onKeyDown={(e) => { if (e.key === 'Enter') sendMessage(); }}
+        />
+        <Button onClick={sendMessage} className="bg-blue-600 hover:bg-blue-700">Enviar</Button>
       </div>
     </div>
   );

@@ -5,6 +5,7 @@ import { UserPlus, Star, LogIn, UserCircle, Search, PlusCircle, Home, FileText, 
 import { Button } from '@/components/ui/button';
 import { Toaster } from '@/components/ui/toaster';
 import { useToast } from '@/components/ui/use-toast';
+
 import RegistrationPage from '@/pages/RegistrationPage.jsx';
 import LoginPage from '@/pages/LoginPage.jsx';
 import ProfilePage from '@/pages/ProfilePage.jsx';
@@ -12,22 +13,7 @@ import JobSearchPage from '@/pages/JobSearchPage.jsx';
 import PostJobPage from '@/pages/PostJobPage.jsx';
 import ReviewsPage from '@/pages/ReviewsPage.jsx';
 import TermsPage from '@/pages/TermsPage.jsx';
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import JobSearchPage from "./pages/JobSearchPage";
-import JobDetailPage from "./pages/JobDetailPage";
-// (outros imports...)
-
-export default function App() {
-  return (
-    <Router>
-      <Routes>
-        <Route path="/jobs" element={<JobSearchPage />} />
-        <Route path="/jobs/:id" element={<JobDetailPage />} />
-        {/* outras rotas existentes */}
-      </Routes>
-    </Router>
-  );
-}
+import JobDetailPage from '@/pages/JobDetailPage.jsx'; // 👈 NOVO
 
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -44,8 +30,7 @@ const Navbar = () => {
     localStorage.removeItem('usuarioLogado');
     setUsuarioLogado(false);
     setIsMobileMenuOpen(false);
-    // Redireciona pra home (opcional)
-    window.location.assign('/');
+    window.location.assign('/'); // mantém seu redirecionamento atual
   };
 
   const navItems = [
@@ -55,7 +40,6 @@ const Navbar = () => {
     { name: 'Avaliações', path: '/avaliacoes', icon: <Star className="mr-2 h-5 w-5" /> },
   ];
 
-  // Itens do menu mobile variam conforme login
   const mobileNavItems = !usuarioLogado
     ? [
         ...navItems,
@@ -350,6 +334,10 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/cadastro" element={<RegistrationPage />} />
             <Route path="/termos" element={<TermsPage />} />
+
+            {/* 👇 NOVA ROTA DE DETALHES DA VAGA */}
+            <Route path="/vaga/:id" element={<JobDetailPage />} />
+
             <Route
               path="/privacidade"
               element={

@@ -1,5 +1,5 @@
-import React from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MessageCircle, MapPin, Briefcase, DollarSign, CalendarDays } from 'lucide-react';
@@ -9,13 +9,41 @@ import { useToast } from '@/components/ui/use-toast';
 const JobDetailPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { id } = useParams();
   const { toast } = useToast();
-  const job = location.state?.job;
-  const employer_id = location.state?.employer_id;
+  const [job, setJob] = useState(location.state?.job || null);
+  const [employer_id, setEmployerId] = useState(location.state?.employer_id || null);
+  const [loading, setLoading] = useState(false);
+
+  // Caso o usuário entre direto na URL
+  useEffect(() => {
+    const fetchJob = async () => {
+      if (!job && id) {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from('jobs')
+          .select('*')
+          .eq('id', id)
+          .single();
+        if (error) {
+          toast({
+            title: "Erro ao carregar vaga",
+            description: "Não foi possível encontrar esta vaga.",
+            variant: "destructive"
+          });
+          navigate('/');
+        } else {
+          setJob(data);
+          setEmployerId(data.created_by);
+        }
+        setLoading(false);
+      }
+    };
+    fetchJob();
+  }, [id, job, navigate, toast]);
 
   const handleChat = async () => {
     const { data: { user } } = await supabase.auth.getUser();
-
     if (!user) {
       toast({
         title: "Faça login",
@@ -36,8 +64,8 @@ const JobDetailPage = () => {
     });
   };
 
-  if (!job) {
-    return <p className="text-center py-10 text-gray-600">Vaga não encontrada.</p>;
+  if (loading || !job) {
+    return <p className="text-center py-10 text-gray-600">Carregando vaga...</p>;
   }
 
   return (

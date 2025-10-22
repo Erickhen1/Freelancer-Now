@@ -1,23 +1,53 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabaseClient';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useToast } from '@/components/ui/use-toast';
 
 const ChatPage = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { sender_id, recipient_id, job_title, company } = location.state || {};
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
+  // Função para buscar usuário logado (Supabase ou localStorage)
+  const getLoggedUser = async () => {
+    try {
+      let { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        const local = localStorage.getItem('loggedInUser');
+        user = local ? JSON.parse(local) : null;
+      }
+      return user;
+    } catch (error) {
+      console.error('Erro ao obter usuário logado:', error);
+      return null;
+    }
+  };
+
+  // Busca mensagens entre dois usuários
   const fetchMessages = async () => {
-    if (!sender_id || !recipient_id) return;
+    const currentUser = await getLoggedUser();
+    if (!currentUser || !recipient_id) {
+      toast({
+        title: 'Faça login',
+        description: 'Você precisa estar logado para ver mensagens.',
+        variant: 'destructive'
+      });
+      navigate('/login');
+      return;
+    }
+
+    const currentId = currentUser.id || currentUser.user?.id;
     setLoading(true);
     const { data, error } = await supabase
       .from('messages')
       .select('*')
-      .or(`and(sender_id.eq.${sender_id},recipient_id.eq.${recipient_id}),and(sender_id.eq.${recipient_id},recipient_id.eq.${sender_id})`)
+      .or(`and(sender_id.eq.${currentId},recipient_id.eq.${recipient_id}),and(sender_id.eq.${recipient_id},recipient_id.eq.${currentId})`)
       .order('created_at', { ascending: true });
 
     if (error) console.error('Erro ao carregar mensagens:', error);
@@ -25,13 +55,27 @@ const ChatPage = () => {
     setLoading(false);
   };
 
+  // Enviar nova mensagem
   const sendMessage = async (e) => {
     e.preventDefault();
     if (!newMessage.trim()) return;
 
+    const currentUser = await getLoggedUser();
+    if (!currentUser) {
+      toast({
+        title: 'Faça login',
+        description: 'Você precisa estar logado para enviar mensagens.',
+        variant: 'destructive'
+      });
+      navigate('/login');
+      return;
+    }
+
+    const currentId = currentUser.id || currentUser.user?.id;
+
     const { error } = await supabase
       .from('messages')
-      .insert([{ sender_id, recipient_id, content: newMessage }]);
+      .insert([{ sender_id: currentId, recipient_id, content: newMessage }]);
 
     if (error) {
       console.error('Erro ao enviar mensagem:', error);
@@ -43,7 +87,7 @@ const ChatPage = () => {
 
   useEffect(() => {
     fetchMessages();
-  }, [sender_id, recipient_id]);
+  }, [recipient_id]);
 
   return (
     <div className="container mx-auto py-12 px-4 max-w-2xl">
@@ -61,7 +105,7 @@ const ChatPage = () => {
               <div
                 key={msg.id}
                 className={`my-2 p-2 rounded-lg max-w-[70%] ${
-                  msg.sender_id === sender_id
+                  msg.sender_id === (JSON.parse(localStorage.getItem('loggedInUser'))?.id)
                     ? 'bg-blue-100 ml-auto text-right'
                     : 'bg-gray-200'
                 }`}

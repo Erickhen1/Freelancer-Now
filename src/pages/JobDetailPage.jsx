@@ -6,6 +6,21 @@ import { MessageCircle, MapPin, Briefcase, DollarSign, CalendarDays } from 'luci
 import { supabase } from '@/lib/supabaseClient';
 import { useToast } from '@/components/ui/use-toast';
 
+// Busca o usuário logado: Supabase -> fallback localStorage
+const getLoggedUser = async () => {
+  try {
+    let { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      const local = localStorage.getItem('loggedInUser');
+      user = local ? JSON.parse(local) : null;
+    }
+    return user;
+  } catch (e) {
+    console.error('Erro ao obter usuário logado:', e);
+    return null;
+  }
+};
+
 const JobDetailPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -43,20 +58,40 @@ const JobDetailPage = () => {
     fetchJob();
   }, [id, job, navigate, toast]);
 
-  const handleChat = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      toast({
-        title: "Faça login",
-        description: "Você precisa estar logado para enviar mensagens.",
-        variant: "destructive"
-      });
-      navigate('/login');
-      console.log("Job:", job);
-console.log("Employer:", employer_id);
+ const handleChat = async () => {
+  const user = await getLoggedUser();
 
-      return;
+  if (!user) {
+    toast({
+      title: "Faça login",
+      description: "Você precisa estar logado para enviar mensagens.",
+      variant: "destructive"
+    });
+    navigate('/login');
+    return;
+  }
+
+  // id quando vem do Supabase = user.id; quando vem do localStorage = user.id (seu login salva assim)
+  const senderId = user.id || user.user?.id;
+  if (!senderId || !employer_id) {
+    toast({
+      title: "Dados insuficientes",
+      description: "Não foi possível iniciar a conversa (IDs ausentes).",
+      variant: "destructive"
+    });
+    return;
+  }
+
+  navigate('/chat', {
+    state: {
+      sender_id: senderId,
+      recipient_id: employer_id,
+      job_title: job?.title || '',
+      company: job?.company_name || ''
     }
+  });
+};
+
 
     navigate('/chat', {
       state: {

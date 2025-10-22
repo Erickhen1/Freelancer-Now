@@ -9,6 +9,32 @@ import React, { useState, useEffect } from 'react';
     import { Search, MapPin, Briefcase, Filter, DollarSign, Clock, Loader2 } from 'lucide-react';
     import { supabase } from '@/lib/supabaseClient';
     import { useToast } from '@/components/ui/use-toast';
+import { Link } from "react-router-dom";
+
+export default function JobSearchPage() {
+  const vagas = [
+    { id: "1", titulo: "Cozinheiro", cidade: "São Paulo", salario: "R$ 130/dia" },
+    { id: "2", titulo: "Auxiliar de Horta", cidade: "Ubarana-SP", salario: "R$ 100/dia" },
+  ];
+
+  return (
+    <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+      {vagas.map(vaga => (
+        <div key={vaga.id} className="border p-4 rounded-lg shadow-sm">
+          <h2 className="font-bold text-xl text-green-700">{vaga.titulo}</h2>
+          <p>{vaga.cidade}</p>
+          <p>{vaga.salario}</p>
+          <Link
+            to={`/jobs/${vaga.id}`}
+            className="text-blue-600 underline mt-2 block"
+          >
+            Ver Detalhes
+          </Link>
+        </div>
+      ))}
+    </div>
+  );
+}
 
     const JobSearchPage = () => {
       const [searchTerm, setSearchTerm] = useState('');

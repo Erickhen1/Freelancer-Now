@@ -10,6 +10,7 @@ const JobDetailPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { id } = useParams();
+  console.log("Debug ID:", id);
   const { toast } = useToast();
   const [job, setJob] = useState(location.state?.job || null);
   const [employer_id, setEmployerId] = useState(location.state?.employer_id || null);
@@ -51,6 +52,9 @@ const JobDetailPage = () => {
         variant: "destructive"
       });
       navigate('/login');
+      console.log("Job:", job);
+console.log("Employer:", employer_id);
+
       return;
     }
 

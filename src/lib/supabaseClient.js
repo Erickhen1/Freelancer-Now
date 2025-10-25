@@ -1,6 +1,12 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = 'https://ucxoxkgjiesocvkhkrhg.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjeG94a2dqaWVzb2N2a2hrcmhnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAwNjE5MjgsImV4cCI6MjA3NTYzNzkyOH0._CIZ-dmno4u3T3loyvDW3FNAtJqXDy7rjPVE_gWFg3Y';
+// Lê as variáveis de ambiente configuradas no Netlify
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+// Verifica se as chaves foram carregadas (para debug local)
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error("Erro: Variáveis de ambiente do Supabase não carregadas. Verifique .env ou Netlify.");
+}
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);

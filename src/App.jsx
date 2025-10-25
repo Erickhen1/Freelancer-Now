@@ -338,7 +338,7 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/cadastro" element={<RegistrationPage />} />
             <Route path="/termos" element={<TermsPage />} />
-            <Route path="/chat/:chatId" element={<ChatPage />} />
+            <Route path="/chat/:otherUserId" element={<ChatPage />} />
             <Route
               path="/privacidade"
               element={
